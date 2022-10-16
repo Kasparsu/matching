@@ -1,0 +1,17 @@
+{
+    "name": "kaspa/matching",
+    "autoload": {
+        "psr-4": {
+            "Kaspa\\Matching\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Kaspar Martin Suursalu",
+            "email": "kasparsu@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "symfony/var-dumper": "^6.1"
+    }
+}
