@@ -71,27 +71,34 @@ class Roster {
         }
     }
     public function balance(){
-        usort($this->teams, function($teamA,$teamB) {
-            return $teamB->avgSr-$teamA->avgSr;
-        });
-        for($i=0; $i<5;$i++){
-            $lowest = $this->teams[count($this->teams)-1]->getMembersSortedBySr()[$i];
-            $swaps = $this->teams[0]->getSwappableMembersSortedBySr($lowest['player'], $lowest['role']);
-            foreach($swaps as $swap){
-                $team1 = clone $this->teams[0];
-                $team2 = clone $this->teams[count($this->teams)-1];
-                $team2->swap($lowest, $swap);
-                $team1->swap($swap, $lowest);
-                $team1->getAvgSr();
-                $team2->getAvgSr();
-                if(abs($team1->avgSr-$team2->avgSr)<abs($this->teams[0]->avgSr-$this->teams[count($this->teams)-1]->avgSr)){
-                    $this->teams[0] = $team1;
-                    $this->teams[count($this->teams)-1] = $team2;
-                    usort($this->teams, function($teamA,$teamB) {
-                        return $teamB->avgSr-$teamA->avgSr;
-                    });
-                    $i=-1;
-                    break;
+
+        $roles = ['tank', 'dps', 'dps', 'sup', 'sup'];
+        for($j=1;$j<count($this->teams);$j++){
+            for($i=0; $i<5;$i++){
+                usort($this->teams, function($teamA,$teamB) use($roles, $i) {
+                    return $teamB->getAvgRoleSr($roles[$i]) - $teamA->getAvgRoleSr($roles[$i]);
+                });
+                
+                $lowest = $this->teams[count($this->teams)-$j]->getMembersSortedBySr()[0];
+                $swaps = $this->teams[0]->getSwappableMembersSortedBySr($lowest['player'], $lowest['role']);
+                if($i==4){
+                    dump($lowest);
+                    dump($swaps);
+                }
+                foreach($swaps as $swap){
+                    $team1 = clone $this->teams[0];
+                    $team2 = clone $this->teams[count($this->teams)-1];
+                    $team2->swap($lowest, $swap);
+                    $team1->swap($swap, $lowest);
+                    $team1->getAvgSr();
+                    $team2->getAvgSr();
+                    if(abs($team1->getAvgRoleSr($lowest['role'])-$team2->getAvgRoleSr($lowest['role']))<abs($this->teams[0]->getAvgRoleSr($lowest['role'])-$this->teams[count($this->teams)-1]->getAvgRoleSr($lowest['role'])) &&
+                    abs($team1->getAvgRoleSr($swap['role'])-$team2->getAvgRoleSr($swap['role']))<abs($this->teams[0]->getAvgRoleSr($swap['role'])-$this->teams[count($this->teams)-1]->getAvgRoleSr($swap['role']))){
+                        $this->teams[0] = $team1;
+                        $this->teams[count($this->teams)-1] = $team2;
+                        $i=-1;
+                        break;
+                    }
                 }
             }
         }
@@ -155,7 +162,7 @@ class Roster {
             elseif(count($bRoles)==1 && count($aRoles)>1 && $bRoles[0] == $role){
                 return 1;
             }
-            return abs($sr - $a->srs[$role]) > abs($sr - $b->srs[$role]);
+            return abs($sr - $a->srs[$role]) - abs($sr - $b->srs[$role]);
                 
         });
         return $players;
@@ -202,7 +209,10 @@ class Roster {
             $output.= str_pad($team->sup1->name, 17) . $team->sup1->srs['sup'] . "\n";
             $output.= str_pad($team->sup2->name, 17) . $team->sup2->srs['sup'] . "\n";
             $output.= "---------------------\n";
-            $output.= "Average Sr $team->avgSr";
+            $output.= str_pad("Average Sr", 16) . $team->avgSr . "\n";
+            $output.= str_pad("Avg Tank Sr", 16) . $team->getAvgRoleSr('tank') . "\n";
+            $output.= str_pad("Avg Dps Sr", 16) . $team->getAvgRoleSr('dps') . "\n";
+            $output.= str_pad("Avg Sup Sr", 16) . $team->getAvgRoleSr('sup') . "\n";
             $output.= "\n";
             $output.= "*********************\n";
 

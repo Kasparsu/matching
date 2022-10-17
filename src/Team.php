@@ -37,7 +37,7 @@ class Team {
     public function getMembersSortedBySr(){
         $players = $this->getMembersArray();
         usort($players, function($a, $b) {
-            return $a['player']->srs[$a['role']] > $b['player']->srs[$b['role']];
+            return $a['player']->srs[$a['role']] - $b['player']->srs[$b['role']];
         });
         return $players;
     }
@@ -47,7 +47,7 @@ class Team {
             return in_array($p['role'], $player->getRoles()) && in_array($role, $p['player']->getRoles()) && $player->srs[$role]<$p['player']->srs[$role];
         });
         usort($players, function($a, $b) {
-            return $a['player']->srs[$a['role']] > $b['player']->srs[$b['role']];
+            return $a['player']->srs[$a['role']] - $b['player']->srs[$b['role']] ;
         });
         return $players;
     }
